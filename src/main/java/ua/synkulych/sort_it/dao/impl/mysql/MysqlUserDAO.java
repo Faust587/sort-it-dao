@@ -54,6 +54,7 @@ public class MysqlUserDAO implements DAO<User, String> {
          PreparedStatement statement = connection.prepareStatement(GET_BY_USERNAME_SQL)) {
       statement.setString(1, username);
       ResultSet result = statement.executeQuery();
+      result.next();
       return Optional.of(new User(result.getString("username"), result.getString("password")));
     } catch (SQLException e) {
       throw new DAOException(e);

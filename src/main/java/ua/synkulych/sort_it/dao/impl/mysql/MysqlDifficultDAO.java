@@ -61,6 +61,7 @@ public class MysqlDifficultDAO implements DAO<Difficult, Integer> {
          PreparedStatement statement = connection.prepareStatement(GET_DIFFICULT_BY_ID)) {
       statement.setInt(1, id);
       ResultSet result = statement.executeQuery();
+      result.next();
       return Optional.of(new Difficult(result.getInt("id"), result.getInt("height"), result.getInt("weight"), result.getInt("points")));
     } catch (SQLException e) {
       throw new DAOException(e);

@@ -15,6 +15,11 @@ import java.util.Optional;
 
 public class MysqlColorDAO implements DAO<Color, Integer> {
 
+  private static final String GET_COLOR_BY_ID = """
+      SELECT  *
+        FROM  colors
+       WHERE  colors.id=?
+      """;
   private static final String GET_ALL_COLORS = """
       SELECT  *
         FROM  colors
@@ -39,8 +44,17 @@ public class MysqlColorDAO implements DAO<Color, Integer> {
       """;
 
   @Override
-  public Optional<Color> get(Integer integer) {
-    return Optional.empty();
+  public Optional<Color> get(Integer id) {
+
+    try (Connection connection = ConnectionManager.openConnection();
+         PreparedStatement statement = connection.prepareStatement(GET_COLOR_BY_ID)) {
+      statement.setInt(1, id);
+      ResultSet result = statement.executeQuery();
+      result.next();
+      return Optional.of(new Color(result.getInt("id"), result.getString("value")));
+    } catch (SQLException e) {
+      throw new DAOException(e);
+    }
   }
 
   @Override
