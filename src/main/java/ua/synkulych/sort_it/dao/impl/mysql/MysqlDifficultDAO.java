@@ -1,5 +1,6 @@
 package ua.synkulych.sort_it.dao.impl.mysql;
 
+import ua.synkulych.sort_it.dao.DAO;
 import ua.synkulych.sort_it.dao.abstraction.DifficultDAO;
 import ua.synkulych.sort_it.dao.entity.Difficult;
 import ua.synkulych.sort_it.dao.exception.DAOException;
@@ -10,8 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-public class MysqlDifficultDAO extends DifficultDAO {
+public class MysqlDifficultDAO implements DAO<Difficult, Integer> {
 
   private static final String GET_DIFFICULT_BY_ID = """
       SELECT  difficult.height,
@@ -51,37 +54,28 @@ public class MysqlDifficultDAO extends DifficultDAO {
   private MysqlDifficultDAO() {
   }
 
-  private static class SingletonHolder {
-    private static final MysqlDifficultDAO INSTANCE = new MysqlDifficultDAO();
-  }
-
-  public static MysqlDifficultDAO getInstance() {
-    return MysqlDifficultDAO.SingletonHolder.INSTANCE;
-  }
-
   @Override
-  public Difficult getDifficultById(int id) {
+  public Optional<Difficult> get(Integer id) {
 
     try (Connection connection = ConnectionManager.openConnection();
          PreparedStatement statement = connection.prepareStatement(GET_DIFFICULT_BY_ID)) {
       statement.setInt(1, id);
       ResultSet result = statement.executeQuery();
-      result.next();
-      return new Difficult(result.getInt("height"), result.getInt("weight"), result.getInt("points"));
+      return Optional.of(new Difficult(result.getInt("id"), result.getInt("height"), result.getInt("weight"), result.getInt("points")));
     } catch (SQLException e) {
       throw new DAOException(e);
     }
   }
 
   @Override
-  public ArrayList<Difficult> getDifficultList() {
+  public List<Difficult> getAll() {
 
     try (Connection connection = ConnectionManager.openConnection();
          PreparedStatement statement = connection.prepareStatement(GET_ALL_DIFFICULT)) {
       ResultSet result = statement.executeQuery();
       ArrayList<Difficult> difficultList = new ArrayList<>();
       while (result.next()) {
-        difficultList.add(new Difficult(result.getInt("height"), result.getInt("weight"), result.getInt("points")));
+        difficultList.add(new Difficult(result.getInt("id"), result.getInt("height"), result.getInt("weight"), result.getInt("points")));
       }
       return difficultList;
     } catch (SQLException e) {
@@ -90,46 +84,55 @@ public class MysqlDifficultDAO extends DifficultDAO {
   }
 
   @Override
-  public boolean updateDifficultById(int id, int height, int weight, int points) {
-
-    try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(UPDATE_DIFFICULT)) {
-      statement.setInt(1, height);
-      statement.setInt(2, weight);
-      statement.setInt(3, points);
-      statement.setInt(4, id);
-      ResultSet result = statement.executeQuery();
-      return result.next();
-    } catch (SQLException e) {
-      throw new DAOException(e);
-    }
-  }
-
-  @Override
-  public boolean deleteDifficultById(int id) {
-
-    try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(DELETE_DIFFICULT_BY_ID)) {
-       statement.setInt(1, id);
-       ResultSet result = statement.executeQuery();
-       return result.next();
-    } catch (SQLException e) {
-      throw new DAOException(e);
-    }
-  }
-
-  @Override
-  public boolean addDifficultById(int height, int weight, int points) {
+  public Difficult save(Difficult difficult) {
 
     try (Connection connection = ConnectionManager.openConnection();
          PreparedStatement statement = connection.prepareStatement(INSERT_NEW_DIFFICULT)) {
-      statement.setInt(1, height);
-      statement.setInt(2, weight);
-      statement.setInt(3, points);
+      statement.setInt(1, difficult.getHeight());
+      statement.setInt(2, difficult.getWeight());
+      statement.setInt(3, difficult.getPoints());
+      ResultSet result = statement.executeQuery();
+      if (result.next()) return difficult;
+      throw new DAOException("Can not save difficult to database");
+    } catch (SQLException e) {
+      throw new DAOException(e);
+    }
+  }
+
+  @Override
+  public boolean update(Difficult difficult) {
+
+    try (Connection connection = ConnectionManager.openConnection();
+         PreparedStatement statement = connection.prepareStatement(UPDATE_DIFFICULT)) {
+      statement.setInt(1, difficult.getHeight());
+      statement.setInt(2, difficult.getWeight());
+      statement.setInt(3, difficult.getPoints());
+      statement.setInt(4, difficult.getId());
       ResultSet result = statement.executeQuery();
       return result.next();
     } catch (SQLException e) {
       throw new DAOException(e);
     }
+  }
+
+  @Override
+  public boolean delete(Integer id) {
+
+    try (Connection connection = ConnectionManager.openConnection();
+         PreparedStatement statement = connection.prepareStatement(DELETE_DIFFICULT_BY_ID)) {
+      statement.setInt(1, id);
+      ResultSet result = statement.executeQuery();
+      return result.next();
+    } catch (SQLException e) {
+      throw new DAOException(e);
+    }
+  }
+
+  private static class SingletonHolder {
+    private static final MysqlDifficultDAO INSTANCE = new MysqlDifficultDAO();
+  }
+
+  public static MysqlDifficultDAO getInstance() {
+    return MysqlDifficultDAO.SingletonHolder.INSTANCE;
   }
 }
