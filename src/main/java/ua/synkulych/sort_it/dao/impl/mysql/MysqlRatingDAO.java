@@ -1,6 +1,6 @@
 package ua.synkulych.sort_it.dao.impl.mysql;
 
-import ua.synkulych.sort_it.dao.abstraction.RatingDAO;
+import ua.synkulych.sort_it.dao.DAO;
 import ua.synkulych.sort_it.dao.entity.Rating;
 import ua.synkulych.sort_it.dao.exception.DAOException;
 import ua.synkulych.sort_it.dao.utils.ConnectionManager;
@@ -10,8 +10,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-public class MysqlRatingDAO extends RatingDAO {
+public class MysqlRatingDAO implements DAO<Rating, Integer> {
 
   private static final String GET_ALL_RATINGS = """
       SELECT rating.difficult_id,
@@ -27,7 +29,7 @@ public class MysqlRatingDAO extends RatingDAO {
       """;
 
   private static final String INSERT_NEW_RATING = """
-      INSERT 
+      INSERT
         INTO  rating (user_id, difficult_id)
        VALUE  (?, ?)
       """;
@@ -38,11 +40,29 @@ public class MysqlRatingDAO extends RatingDAO {
        WHERE  rating.id=?
       """;
 
-  private MysqlRatingDAO() {
+  private static final String UPDATE_RATING = """
+      UPDATE  rating
+         SET  rating.user_id=?,
+              rating.difficult_id=?
+       WHERE  rating.id=?
+      """;
+
+  @Override
+  public Optional<Rating> get(Integer id) {
+
+    try (Connection connection = ConnectionManager.openConnection();
+         PreparedStatement statement = connection.prepareStatement(GET_RATING_BY_ID)) {
+      statement.setInt(1, id);
+      ResultSet result = statement.executeQuery();
+      result.next();
+      return Optional.of(new Rating(result.getInt("user_id"), result.getInt("difficult_id")));
+    } catch (SQLException e) {
+      throw new DAOException(e);
+    }
   }
 
   @Override
-  public ArrayList<Rating> getRatingListByUserId(int userId) {
+  public List<Rating> getAll() {
 
     try (Connection connection = ConnectionManager.openConnection();
          PreparedStatement statement = connection.prepareStatement(GET_ALL_RATINGS)) {
@@ -58,26 +78,28 @@ public class MysqlRatingDAO extends RatingDAO {
   }
 
   @Override
-  public Rating getRatingById(int id) {
+  public Rating save(Rating rating) {
 
     try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(GET_RATING_BY_ID)) {
-      statement.setInt(1, id);
+         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_RATING)) {
+      statement.setInt(1, rating.getUserId());
+      statement.setInt(2, rating.getDifficultId());
       ResultSet result = statement.executeQuery();
-      result.next();
-      return new Rating(result.getInt("user_id"), result.getInt("difficult_id"));
+      if (result.next()) return rating;
+      throw new DAOException("Can not save rating to the database");
     } catch (SQLException e) {
       throw new DAOException(e);
     }
   }
 
   @Override
-  public boolean addRating(int userId, int difficult_id) {
+  public boolean update(Rating rating) {
 
     try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_RATING)) {
-      statement.setInt(1, userId);
-      statement.setInt(2, difficult_id);
+         PreparedStatement statement = connection.prepareStatement(UPDATE_RATING)) {
+      statement.setInt(1, rating.getUserId());
+      statement.setInt(2, rating.getDifficultId());
+      statement.setInt(3, rating.getId());
       ResultSet result = statement.executeQuery();
       return result.next();
     } catch (SQLException e) {
@@ -86,7 +108,7 @@ public class MysqlRatingDAO extends RatingDAO {
   }
 
   @Override
-  public boolean deleteRatingById(int id) {
+  public boolean delete(Integer id) {
 
     try (Connection connection = ConnectionManager.openConnection();
          PreparedStatement statement = connection.prepareStatement(DELETE_RATING_BY_ID)) {
@@ -96,6 +118,9 @@ public class MysqlRatingDAO extends RatingDAO {
     } catch (SQLException e) {
       throw new DAOException(e);
     }
+  }
+
+  private MysqlRatingDAO() {
   }
 
   private static class SingletonHolder {
