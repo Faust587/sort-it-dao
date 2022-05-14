@@ -1,6 +1,9 @@
 package ua.synkulych.sort_it.dao.factory;
 
-import ua.synkulych.sort_it.dao.impl.mysql.MysqlUserDAO;
+import ua.synkulych.sort_it.dao.abstraction.ColorDAO;
+import ua.synkulych.sort_it.dao.abstraction.DifficultDAO;
+import ua.synkulych.sort_it.dao.abstraction.RatingDAO;
+import ua.synkulych.sort_it.dao.abstraction.UserDAO;
 
 public class PostgresqlDAOFactory extends DAOFactory {
 
@@ -8,7 +11,22 @@ public class PostgresqlDAOFactory extends DAOFactory {
   }
 
   @Override
-  public MysqlUserDAO getUserByUsername() {
+  public UserDAO getUserDAO() {
+    return null;
+  }
+
+  @Override
+  public ColorDAO getColorDAO() {
+    return null;
+  }
+
+  @Override
+  public DifficultDAO getDifficultDAO() {
+    return null;
+  }
+
+  @Override
+  public RatingDAO getRatingDAO() {
     return null;
   }
 

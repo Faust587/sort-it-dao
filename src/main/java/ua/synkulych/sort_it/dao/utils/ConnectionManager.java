@@ -12,6 +12,7 @@ public final class ConnectionManager {
   private static final String PASSWORD_KEY  = "db.password";
 
   public static Connection openConnection() {
+    System.out.println(PropertiesUtil.getProperties(URL_KEY));
     try {
       return DriverManager.getConnection(
         PropertiesUtil.getProperties(URL_KEY),

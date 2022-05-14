@@ -1,6 +1,9 @@
 package ua.synkulych.sort_it.dao.factory;
 
-import ua.synkulych.sort_it.dao.impl.mysql.MysqlUserDAO;
+import ua.synkulych.sort_it.dao.abstraction.ColorDAO;
+import ua.synkulych.sort_it.dao.abstraction.DifficultDAO;
+import ua.synkulych.sort_it.dao.abstraction.RatingDAO;
+import ua.synkulych.sort_it.dao.abstraction.UserDAO;
 
 public abstract class DAOFactory {
 
@@ -15,5 +18,8 @@ public abstract class DAOFactory {
     };
   }
 
-  public abstract MysqlUserDAO getUserByUsername();
+  public abstract UserDAO getUserDAO();
+  public abstract ColorDAO getColorDAO();
+  public abstract DifficultDAO getDifficultDAO();
+  public abstract RatingDAO getRatingDAO();
 }
