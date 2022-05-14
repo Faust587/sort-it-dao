@@ -4,6 +4,10 @@ import ua.synkulych.sort_it.dao.abstraction.ColorDAO;
 import ua.synkulych.sort_it.dao.abstraction.DifficultDAO;
 import ua.synkulych.sort_it.dao.abstraction.RatingDAO;
 import ua.synkulych.sort_it.dao.abstraction.UserDAO;
+import ua.synkulych.sort_it.dao.impl.mysql.MysqlColorDAO;
+import ua.synkulych.sort_it.dao.impl.mysql.MysqlDifficultDAO;
+import ua.synkulych.sort_it.dao.impl.mysql.MysqlRatingDAO;
+import ua.synkulych.sort_it.dao.impl.mysql.MysqlUserDAO;
 
 public class PostgresqlDAOFactory extends DAOFactory {
 
@@ -11,22 +15,22 @@ public class PostgresqlDAOFactory extends DAOFactory {
   }
 
   @Override
-  public UserDAO getUserDAO() {
+  public MysqlUserDAO getUserDAO() {
     return null;
   }
 
   @Override
-  public ColorDAO getColorDAO() {
+  public MysqlColorDAO getColorDAO() {
     return null;
   }
 
   @Override
-  public DifficultDAO getDifficultDAO() {
+  public MysqlDifficultDAO getDifficultDAO() {
     return null;
   }
 
   @Override
-  public RatingDAO getRatingDAO() {
+  public MysqlRatingDAO getRatingDAO() {
     return null;
   }
 
