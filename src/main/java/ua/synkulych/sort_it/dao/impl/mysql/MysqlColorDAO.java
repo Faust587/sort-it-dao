@@ -5,10 +5,7 @@ import ua.synkulych.sort_it.dao.entity.Color;
 import ua.synkulych.sort_it.dao.exception.DAOException;
 import ua.synkulych.sort_it.dao.utils.ConnectionManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -74,13 +71,14 @@ public class MysqlColorDAO implements DAO<Color, Integer> {
   }
 
   @Override
-  public Color save(Color color) {
+  public Integer save(Color color) {
 
     try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_COLOR)) {
+         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_COLOR, Statement.RETURN_GENERATED_KEYS)) {
       statement.setString(1, color.getValue());
-      ResultSet result = statement.executeQuery();
-      if (result.next()) return color;
+      statement.executeQuery();
+      ResultSet result = statement.getGeneratedKeys();
+      if (result.next()) return result.getInt(1);
       throw new DAOException("Can not add color to the database");
     } catch (SQLException e) {
       throw new RuntimeException(e);

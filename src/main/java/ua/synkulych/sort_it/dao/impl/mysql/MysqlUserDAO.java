@@ -5,10 +5,7 @@ import ua.synkulych.sort_it.dao.entity.User;
 import ua.synkulych.sort_it.dao.exception.DAOException;
 import ua.synkulych.sort_it.dao.utils.ConnectionManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,14 +75,15 @@ public class MysqlUserDAO implements DAO<User, String> {
   }
 
   @Override
-  public User save(User user) {
+  public Integer save(User user) {
 
     try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_USER)) {
+         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_USER, Statement.RETURN_GENERATED_KEYS)) {
       statement.setString(1, user.getUsername());
       statement.setString(2, user.getPassword());
-      ResultSet result = statement.executeQuery();
-      if (result.next()) return user;
+      statement.executeQuery();
+      ResultSet result = statement.getGeneratedKeys();
+      if (result.next()) return result.getInt(1);
       throw new DAOException("Can not save user to the database");
     } catch (SQLException e) {
       throw new DAOException(e);

@@ -1,15 +1,11 @@
 package ua.synkulych.sort_it.dao.impl.mysql;
 
 import ua.synkulych.sort_it.dao.DAO;
-import ua.synkulych.sort_it.dao.abstraction.DifficultDAO;
 import ua.synkulych.sort_it.dao.entity.Difficult;
 import ua.synkulych.sort_it.dao.exception.DAOException;
 import ua.synkulych.sort_it.dao.utils.ConnectionManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -85,15 +81,16 @@ public class MysqlDifficultDAO implements DAO<Difficult, Integer> {
   }
 
   @Override
-  public Difficult save(Difficult difficult) {
+  public Integer save(Difficult difficult) {
 
     try (Connection connection = ConnectionManager.openConnection();
-         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_DIFFICULT)) {
+         PreparedStatement statement = connection.prepareStatement(INSERT_NEW_DIFFICULT, Statement.RETURN_GENERATED_KEYS)) {
       statement.setInt(1, difficult.getHeight());
       statement.setInt(2, difficult.getWeight());
       statement.setInt(3, difficult.getPoints());
-      ResultSet result = statement.executeQuery();
-      if (result.next()) return difficult;
+      statement.executeQuery();
+      ResultSet result = statement.getGeneratedKeys();
+      if (result.next()) return result.getInt(1);
       throw new DAOException("Can not save difficult to database");
     } catch (SQLException e) {
       throw new DAOException(e);

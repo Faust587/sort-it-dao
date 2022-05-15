@@ -78,14 +78,15 @@ public class MysqlRatingDAO implements DAO<Rating, Integer> {
   }
 
   @Override
-  public Rating save(Rating rating) {
+  public Integer save(Rating rating) {
 
     try (Connection connection = ConnectionManager.openConnection();
          PreparedStatement statement = connection.prepareStatement(INSERT_NEW_RATING)) {
       statement.setInt(1, rating.getUserId());
       statement.setInt(2, rating.getDifficultId());
-      ResultSet result = statement.executeQuery();
-      if (result.next()) return rating;
+      statement.executeQuery();
+      ResultSet result = statement.getGeneratedKeys();
+      if (result.next()) return result.getInt(1);
       throw new DAOException("Can not save rating to the database");
     } catch (SQLException e) {
       throw new DAOException(e);
